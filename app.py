@@ -14,7 +14,7 @@ class PDF(FPDF):
     def header(self):
         self.set_font("Arial", "B", 12)
         self.cell(0, 10, "Formulario de Visita al Cliente", align="L")
-        logo_path = "imagenes/logoCTR.png"
+        logo_path = "static/images/logoCTR.png"
         if os.path.exists(logo_path):
             self.image(logo_path, 170, 8, 30)
         self.ln(20)
