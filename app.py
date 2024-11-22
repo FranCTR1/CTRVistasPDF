@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, render_template, request, jsonify
 from fpdf import FPDF
 import os
 import smtplib
@@ -82,6 +82,11 @@ def enviar_email(asunto, mensaje, archivo_pdf):
         return "Correo enviado exitosamente"
     except Exception as e:
         return f"Error al enviar el correo: {str(e)}"
+    
+# Ruta para mostrar el formulario HTML
+@app.route('/')
+def index():
+    return render_template('index.html')  # Flask busca este archivo en la carpeta templates
 
 # Ruta para recibir datos y generar el PDF
 @app.route('/generar_pdf', methods=['POST'])
@@ -115,5 +120,7 @@ def generar_pdf_endpoint():
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
+
 if __name__ == '__main__':
-    app.run(port=5000, debug=True)
+    port = int(os.environ.get("PORT", 5000))  # Usa el puerto 5000 por defecto si PORT no está configurado
+    app.run(host='0.0.0.0', port=port, debug=True)
