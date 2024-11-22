@@ -86,10 +86,10 @@
         <!-- Título con logo -->
         <div class="header-title">
             <h1>Formulario de Visita al Cliente</h1>
-            <img src="imagenes/logoCTR.png" alt="Logo de la Empresa">
+            <img src="{{ url_for('static', filename='images/logoCTR.png') }}" alt="Logo de la Empresa">
         </div>
 
-        <form action="http://localhost:5000/generar_pdf" method="post">
+        <form action="/generar_pdf" method="post">
             <label for="nombre">Nombre del Cliente:</label>
             <input type="text" id="nombre" name="nombre" required>
 
@@ -150,3 +150,4 @@
     </div>
 </body>
 </html>
+
