@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulario de Visita al Cliente</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .form-container {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .header-title img {
+            height: 50px; /* Tamaño del logo */
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-top: 10px;
+            margin-bottom: 5px;
+            color: #555;
+        }
+
+        input[type="text"],
+        input[type="date"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+
+        textarea {
+            resize: none;
+            height: 80px;
+        }
+
+        input[type="radio"],
+        input[type="checkbox"] {
+            margin-right: 5px;
+        }
+
+        input[type="submit"] {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            margin-top: 20px;
+            transition: background-color 0.3s ease;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <!-- Título con logo -->
+        <div class="header-title">
+            <h1>Formulario de Visita al Cliente</h1>
+            <img src="imagenes/logoCTR.png" alt="Logo de la Empresa">
+        </div>
+
+        <form action="http://localhost:5000/generar_pdf" method="post">
+            <label for="nombre">Nombre del Cliente:</label>
+            <input type="text" id="nombre" name="nombre" required>
+
+            <label for="fecha">Fecha de la Visita:</label>
+            <input type="date" id="fecha" name="fecha" required>
+
+            <label for="departamento">Departamento:</label>
+            <input type="text" id="departamento" name="departamento">
+
+            <label for="usuario">Usuario:</label>
+            <input type="text" id="usuario" name="usuario">
+
+            <label for="sector">Sector:</label>
+            <input type="text" id="sector" name="sector">
+
+            <label for="vendedor">Vendedor:</label>
+            <input type="text" id="vendedor" name="vendedor">
+
+            <label for="especialista">Especialista de Producto:</label>
+            <input type="text" id="especialista" name="especialista">
+
+            <label for="productos">Equipos o Productos Presentados:</label>
+            <textarea id="productos" name="productos"></textarea>
+
+            <!-- Nivel de Interés (Botones de Radio Horizontal) -->
+            <label>Nivel de Interés:</label>
+            <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 15px;">
+                <input type="radio" id="interes-alto" name="interes" value="Alto" required>
+                <label for="interes-alto" style="margin: 0;">Alto</label>
+                
+                <input type="radio" id="interes-medio" name="interes" value="Medio">
+                <label for="interes-medio" style="margin: 0;">Medio</label>
+                
+                <input type="radio" id="interes-bajo" name="interes" value="Bajo">
+                <label for="interes-bajo" style="margin: 0;">Bajo</label>
+                
+                <input type="radio" id="interes-nada" name="interes" value="Nada">
+                <label for="interes-nada" style="margin: 0;">Nada</label>
+            </div>
+
+            <label for="comentarios">Comentarios/Preguntas:</label>
+            <textarea id="comentarios" name="comentarios"></textarea>
+
+            <label for="competencia">Equipos de la Competencia:</label>
+            <textarea id="competencia" name="competencia"></textarea>
+
+            <label for="monto">Monto Estimado:</label>
+            <input type="text" id="monto" name="monto">
+
+            <label for="oportunidades">Oportunidades para Otros Productos:</label>
+            <textarea id="oportunidades" name="oportunidades"></textarea>
+
+            <label for="seguimiento">¿Requiere Seguimiento?</label>
+            <input type="checkbox" id="seguimiento" name="seguimiento" value="Sí"> Sí
+
+            <input type="submit" value="Generar PDF">
+        </form>
+    </div>
+</body>
+</html>
