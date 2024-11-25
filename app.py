@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, send_file
 from fpdf import FPDF
 import os
 import smtplib
@@ -48,23 +48,19 @@ def generar_pdf(data):
 
 # Función para enviar el PDF por correo
 def enviar_email(asunto, mensaje, archivo_pdf):
-    # Configuración del servidor SMTP de Microsoft
-    smtp_server = "smtp.office365.com"  # Servidor SMTP de Microsoft
-    smtp_port = 587  # Puerto SMTP para TLS
-    email_remitente = "francisco.galvez@ctr.com.mx"  # Cambia por tu correo de Microsoft
-    email_password = "65228Esg"  # Cambia por tu contraseña de Microsoft
-    email_destinatario = "FranciscoLeonid1604@gmail.com"  # Correo fijo del destinatario
-    # CAMBIAR DESTINATARIO
+    smtp_server = "smtp.office365.com"
+    smtp_port = 587
+    email_remitente = "francisco.galvez@ctr.com.mx"
+    email_password = "65228Esg"
+    email_destinatario = "francisco.galvez@ctr.com.mx"
 
     try:
-        # Crear mensaje de correo
         msg = MIMEMultipart()
         msg["From"] = email_remitente
         msg["To"] = email_destinatario
         msg["Subject"] = asunto
         msg.attach(MIMEText(mensaje, "plain"))
 
-        # Adjuntar el archivo PDF
         with open(archivo_pdf, "rb") as attachment:
             part = MIMEBase("application", "octet-stream")
             part.set_payload(attachment.read())
@@ -72,9 +68,8 @@ def enviar_email(asunto, mensaje, archivo_pdf):
         part.add_header("Content-Disposition", f"attachment; filename={os.path.basename(archivo_pdf)}")
         msg.attach(part)
 
-        # Conexión al servidor SMTP de Microsoft
         server = smtplib.SMTP(smtp_server, smtp_port)
-        server.starttls()  # Iniciar conexión TLS
+        server.starttls()
         server.login(email_remitente, email_password)
         server.send_message(msg)
         server.quit()
@@ -82,13 +77,13 @@ def enviar_email(asunto, mensaje, archivo_pdf):
         return "Correo enviado exitosamente"
     except Exception as e:
         return f"Error al enviar el correo: {str(e)}"
-    
+
 # Ruta para mostrar el formulario HTML
 @app.route('/')
 def index():
-    return render_template('index.html')  # Flask busca este archivo en la carpeta templates
+    return render_template('index.html')
 
-# Ruta para recibir datos y generar el PDF
+# Ruta para recibir datos, generar y enviar el PDF, y descargarlo
 @app.route('/generar_pdf', methods=['POST'])
 def generar_pdf_endpoint():
     data = {
@@ -109,18 +104,19 @@ def generar_pdf_endpoint():
     }
 
     try:
+        # Generar el PDF
         filename = generar_pdf(data)
 
-        # Enviar el correo
+        # Enviar el PDF por correo
         asunto = "Reporte de Visita al Cliente"
         mensaje = "Adjunto encontrarás el reporte de visita al cliente generado desde el formulario."
-        resultado_envio = enviar_email(asunto, mensaje, filename)
+        enviar_email(asunto, mensaje, filename)
 
-        return jsonify({"status": "PDF generado y enviado", "filename": filename, "email_status": resultado_envio})
+        # Descargar el PDF automáticamente
+        return send_file(filename, as_attachment=True, download_name=os.path.basename(filename), mimetype='application/pdf')
     except Exception as e:
-        return jsonify({"status": "error", "message": str(e)}), 500
-
+        return f"Error: {str(e)}", 500
 
 if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 5000))  # Usa el puerto 5000 por defecto si PORT no está configurado
+    port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port, debug=True)
