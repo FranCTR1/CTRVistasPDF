@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, send_file
+from flask import Flask, render_template, request, redirect, url_for, session, send_file
 from fpdf import FPDF
 import os
 import smtplib
@@ -8,6 +8,11 @@ from email.mime.base import MIMEBase
 from email import encoders
 
 app = Flask(__name__)
+app.secret_key = "clave_secreta_segura"  # Necesaria para manejar sesiones
+
+# Credenciales del login
+USERNAME = "ctrbi"
+PASSWORD = "ctr_bi#$2024.TI"
 
 # Clase personalizada para generar el PDF
 class PDF(FPDF):
@@ -23,6 +28,70 @@ class PDF(FPDF):
         self.set_y(-15)
         self.set_font("Arial", "I", 8)
         self.cell(0, 10, f"Página {self.page_no()}", 0, 0, "C")
+
+# Ruta para mostrar la página de login
+@app.route('/', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+
+        if username == USERNAME and password == PASSWORD:
+            # Iniciar sesión y redirigir a la página principal
+            session['logged_in'] = True
+            return redirect(url_for('index'))
+        else:
+            return render_template('login.html', error="Usuario o contraseña incorrectos")
+
+    return render_template('login.html')
+
+# Ruta para la página principal (protegida por sesión)
+@app.route('/index')
+def index():
+    if not session.get('logged_in'):
+        # Si no está autenticado, redirige al login
+        return redirect(url_for('login'))
+    return render_template('index.html')
+
+# Ruta para cerrar sesión
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('login'))
+
+# Ruta para recibir datos, generar y enviar el PDF, y descargarlo
+@app.route('/generar_pdf', methods=['POST'])
+def generar_pdf_endpoint():
+    data = {
+        "Nombre del Cliente": request.form.get("nombre"),
+        "Fecha de la Visita": request.form.get("fecha"),
+        "Departamento": request.form.get("departamento"),
+        "Usuario": request.form.get("usuario"),
+        "Sector": request.form.get("sector"),
+        "Vendedor": request.form.get("vendedor"),
+        "Especialista de Producto": request.form.get("especialista"),
+        "Equipos o Productos Presentados": request.form.get("productos"),
+        "Nivel de Interés": request.form.get("interes"),
+        "Comentarios/Preguntas": request.form.get("comentarios"),
+        "Equipos de la Competencia": request.form.get("competencia"),
+        "Monto Estimado": request.form.get("monto"),
+        "Oportunidades para Otros Productos": request.form.get("oportunidades"),
+        "Requiere Seguimiento": "Sí" if request.form.get("seguimiento") else "No",
+    }
+
+    try:
+        # Generar el PDF
+        filename = generar_pdf(data)
+
+        # Enviar el PDF por correo
+        asunto = "Reporte de Visita al Cliente"
+        mensaje = "Adjunto encontrarás el reporte de visita al cliente generado desde el formulario."
+        enviar_email(asunto, mensaje, filename)
+
+        # Descargar el PDF automáticamente
+        return send_file(filename, as_attachment=True, download_name=os.path.basename(filename), mimetype='application/pdf')
+    except Exception as e:
+        return f"Error: {str(e)}", 500
 
 # Función para generar el PDF
 def generar_pdf(data):
@@ -77,45 +146,6 @@ def enviar_email(asunto, mensaje, archivo_pdf):
         return "Correo enviado exitosamente"
     except Exception as e:
         return f"Error al enviar el correo: {str(e)}"
-
-# Ruta para mostrar el formulario HTML
-@app.route('/')
-def index():
-    return render_template('index.html')
-
-# Ruta para recibir datos, generar y enviar el PDF, y descargarlo
-@app.route('/generar_pdf', methods=['POST'])
-def generar_pdf_endpoint():
-    data = {
-        "Nombre del Cliente": request.form.get("nombre"),
-        "Fecha de la Visita": request.form.get("fecha"),
-        "Departamento": request.form.get("departamento"),
-        "Usuario": request.form.get("usuario"),
-        "Sector": request.form.get("sector"),
-        "Vendedor": request.form.get("vendedor"),
-        "Especialista de Producto": request.form.get("especialista"),
-        "Equipos o Productos Presentados": request.form.get("productos"),
-        "Nivel de Interés": request.form.get("interes"),
-        "Comentarios/Preguntas": request.form.get("comentarios"),
-        "Equipos de la Competencia": request.form.get("competencia"),
-        "Monto Estimado": request.form.get("monto"),
-        "Oportunidades para Otros Productos": request.form.get("oportunidades"),
-        "Requiere Seguimiento": "Sí" if request.form.get("seguimiento") else "No",
-    }
-
-    try:
-        # Generar el PDF
-        filename = generar_pdf(data)
-
-        # Enviar el PDF por correo
-        asunto = "Reporte de Visita al Cliente"
-        mensaje = "Adjunto encontrarás el reporte de visita al cliente generado desde el formulario."
-        enviar_email(asunto, mensaje, filename)
-
-        # Descargar el PDF automáticamente
-        return send_file(filename, as_attachment=True, download_name=os.path.basename(filename), mimetype='application/pdf')
-    except Exception as e:
-        return f"Error: {str(e)}", 500
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
